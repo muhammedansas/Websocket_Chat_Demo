@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Application</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        #chat-log {
+            width: 100%;
+            height: 300px;
+            overflow-y: scroll;
+            border: 1px solid #ccc;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+        #chat-message-input {
+            width: calc(100% - 110px);
+            padding: 10px;
+            margin-right: 10px;
+            box-sizing: border-box;
+        }
+        #chat-message-submit {
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Chat Room</h1>
+    <textarea id="chat-log" readonly></textarea><br>
+    <input id="chat-message-input" type="text" placeholder="Type your message...">
+    <button id="chat-message-submit">Send</button>
+
+    <script>
+        // Create a new WebSocket connection
+        const chatSocket = new WebSocket('ws://' + window.location.host + '/ws/chat/');
+
+        // When a message is received from the server
+        chatSocket.onmessage = function(event) {
+            // Parse the JSON message
+            const data = JSON.parse(event.data);
+            // Append the message to the chat log
+            const chatLog = document.getElementById('chat-log');
+            chatLog.value += data.message + '\n';
+            // Scroll to the bottom of the chat log
+            chatLog.scrollTop = chatLog.scrollHeight;
+        };
+
+        // When the WebSocket connection is closed
+        chatSocket.onclose = function() {
+            console.error('Chat socket closed unexpectedly');
+        };
+
+        // When the Send button is clicked
+        document.getElementById('chat-message-submit').onclick = function() {
+            // Get the message from the input field
+            const messageInput = document.getElementById('chat-message-input');
+            const message = messageInput.value;
+
+            // Send the message to the WebSocket server
+            chatSocket.send(JSON.stringify({'message': message}));
+
+            // Clear the input field
+            messageInput.value = '';
+        };
+    </script>
+</body>
+</html>
